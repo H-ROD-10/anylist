@@ -1,0 +1,83 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  id: ID!
+  fullName: String!
+  email: String!
+  roles: [String!]!
+  isActive: Boolean!
+  lastUpdateByUser: User
+  items: [Item!]!
+  itemCount: Int!
+}
+
+type Item {
+  id: ID!
+  name: String!
+  quantityUnits: String
+  user: User!
+}
+
+type AuthResponse {
+  token: String!
+  user: User!
+}
+
+type Query {
+  revalidate: AuthResponse!
+  users(roles: [ValidRoles!] = []): [User!]!
+  user(id: ID!): User!
+  items: [Item!]!
+  item(id: ID!): Item!
+}
+
+"""Enum de Roles"""
+enum ValidRoles {
+  admin
+  user
+  superUser
+}
+
+type Mutation {
+  signup(signupInput: SignupInput!): AuthResponse!
+  login(loginInpu: LoginInput!): AuthResponse!
+  blockUser(id: ID!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  createItem(createItemInput: CreateItemInput!): Item!
+  updateItem(updateItemInput: UpdateItemInput!): Item!
+  remove(id: ID!): Item!
+  executeSeed: Boolean!
+}
+
+input SignupInput {
+  fullName: String!
+  email: String!
+  password: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  fullName: String
+  email: String
+  password: String
+  roles: [ValidRoles!]
+  isActive: Boolean
+  id: ID!
+}
+
+input CreateItemInput {
+  name: String!
+  quantityUnits: String
+}
+
+input UpdateItemInput {
+  name: String
+  quantityUnits: String
+  id: ID!
+}
