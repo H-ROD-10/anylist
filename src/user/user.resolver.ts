@@ -9,13 +9,19 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth-guards';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { ValidRoles } from 'src/auth/enums/valid-roles.enum';
 import { ItemsService } from 'src/items/items.service';
+import { Item } from 'src/items/entities/item.entity';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { SearchArgs } from 'src/common/dtos/args/serach.args';
+import { ListsService } from 'src/lists/lists.service';
+import { List } from 'src/lists/entities/list.entity';
 
 @Resolver(() => User)
 @UseGuards(JwtAuthGuard)
 export class UserResolver {
   constructor(
     private readonly userService: UserService,
-    private readonly itemService: ItemsService
+    private readonly itemService: ItemsService,
+    private readonly listsService: ListsService
   ) {}
 
 
@@ -23,9 +29,11 @@ export class UserResolver {
   @Query(() => [User], { name: 'users' })
   findAll(
     @Args() validRoles: ValidRolesArgs,
-    @CurrentUser([ValidRoles.admin]) user: User
+    @CurrentUser([ValidRoles.admin]) user: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs
   ): Promise<User[]> {
-    return this.userService.findAll(validRoles.roles);
+    return this.userService.findAll(validRoles.roles, paginationArgs, searchArgs, user);
   }
 
   @Query(() => User, { name: 'user' })
@@ -58,5 +66,35 @@ export class UserResolver {
     @CurrentUser([ValidRoles.admin]) adminUser: User
   ): Promise<number>{
     return await this.itemService.count(user)
+  }
+
+  //DE ESTA FORMA SE INDEPENDIZA EL QUERY DE ITEM DE USER PARA PAGINACION Y BUSQUEDA
+  @ResolveField(() => [Item], {name: 'items'})
+  async getItemsByUser(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs
+  ): Promise<Item[]>{
+    return await this.itemService.findAll(user, paginationArgs, searchArgs)
+  }
+
+  @ResolveField(() => [List], {name: 'listByUser'})
+  async getlistByUser(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User,
+    @Args() paginationArgs: PaginationArgs,
+    @Args() searchArgs: SearchArgs
+  ): Promise<List[]>{
+    return await this.listsService.findAll(user, paginationArgs, searchArgs)
+  }
+
+
+  @ResolveField(() => Int, {name: 'listCount'})
+  async listCount(
+    @Parent() user: User,
+    @CurrentUser([ValidRoles.admin]) adminUser: User
+  ): Promise<number>{
+    return await this.listsService.count(user) 
   }
 }

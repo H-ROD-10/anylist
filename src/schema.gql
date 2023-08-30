@@ -9,8 +9,24 @@ type User {
   roles: [String!]!
   isActive: Boolean!
   lastUpdateByUser: User
-  items: [Item!]!
   itemCount: Int!
+  items(offset: Int = 0, limit: Int = 10, search: String): [Item!]!
+  listByUser(offset: Int = 0, limit: Int = 10, search: String): [List!]!
+  listCount: Int!
+}
+
+type List {
+  id: ID!
+  name: String!
+  user: User!
+  listItem: [ListsItem!]!
+}
+
+type ListsItem {
+  id: ID!
+  quantity: Float!
+  completed: Boolean!
+  item: Item!
 }
 
 type Item {
@@ -18,6 +34,7 @@ type Item {
   name: String!
   quantityUnits: String
   user: User!
+  listItem: [ListsItem!]!
 }
 
 type AuthResponse {
@@ -27,10 +44,12 @@ type AuthResponse {
 
 type Query {
   revalidate: AuthResponse!
-  users(roles: [ValidRoles!] = []): [User!]!
+  users(roles: [ValidRoles!] = [], offset: Int = 0, limit: Int = 10, search: String): [User!]!
   user(id: ID!): User!
-  items: [Item!]!
+  items(offset: Int = 0, limit: Int = 10, search: String): [Item!]!
   item(id: ID!): Item!
+  lists(offset: Int = 0, limit: Int = 10, search: String): [List!]!
+  list(id: ID!): List!
 }
 
 """Enum de Roles"""
@@ -48,7 +67,11 @@ type Mutation {
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   remove(id: ID!): Item!
+  createList(createListInput: CreateListInput!): List!
+  updateList(updateListInput: UpdateListInput!): List!
+  removeList(id: ID!): List!
   executeSeed: Boolean!
+  createListsItem(createListsItemInput: CreateListsItemInput!): ListsItem!
 }
 
 input SignupInput {
@@ -80,4 +103,20 @@ input UpdateItemInput {
   name: String
   quantityUnits: String
   id: ID!
+}
+
+input CreateListInput {
+  name: String!
+}
+
+input UpdateListInput {
+  name: String
+  id: ID!
+}
+
+input CreateListsItemInput {
+  quantity: Float = 0
+  completed: Boolean = false
+  listId: ID!
+  itemId: ID!
 }

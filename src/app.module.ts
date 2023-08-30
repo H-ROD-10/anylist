@@ -10,6 +10,9 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { SeedModule } from './seed/seed.module';
+import { CommonModule } from './common/common.module';
+import { ListsModule } from './lists/lists.module';
+import { ListsItemsModule } from './lists-items/lists-items.module';
 
 
 @Module({
@@ -60,6 +63,9 @@ import { SeedModule } from './seed/seed.module';
     UserModule,
     AuthModule,
     SeedModule,
+    CommonModule,
+    ListsModule,
+    ListsItemsModule,
   ],
   providers: [],
 })

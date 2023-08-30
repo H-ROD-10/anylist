@@ -8,6 +8,8 @@ import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { User } from './entities/user.entity';
 import { ValidRoles } from '../auth/enums/valid-roles.enum';
+import { PaginationArgs } from 'src/common/dtos/args/pagination.args';
+import { SearchArgs } from 'src/common/dtos/args/serach.args';
 
 @Injectable()
 export class UserService {
@@ -33,7 +35,10 @@ export class UserService {
     }
   }
 
-  async findAll(roles: ValidRoles[]): Promise<User[]> {
+  async findAll(roles: ValidRoles[], paginationArgs: PaginationArgs, searchArgs: SearchArgs, user: User): Promise<User[]> {
+
+    const {limit, offset} = paginationArgs;
+    const {search} = searchArgs
 
     if(roles.length === 0) {
       return await this.userRepository.find({
@@ -46,13 +51,22 @@ export class UserService {
     }
 
 
-    return await this.userRepository.createQueryBuilder()
+   return await this.userRepository.createQueryBuilder()
     //ARRAY[roles] se refiere a la columna de users en la base de datos
     //&& ARRAY[:...roles] estos son los roles que envian mediante argumento
     // setParameter('roles', roles) se le pasa el nombre del argumento y los roles que se reciben como parametros
+    .take(limit)
+    .skip(offset)
     .andWhere('ARRAY[roles] && ARRAY[:...roles]')
     .setParameter('roles', roles)
     .getMany()
+    
+    //if(search){
+      //queryBuilder.andWhere('User.fullName = :fullName', {fullName: `%${ search.toLowerCase()}%`})
+      //}
+      //.where(`"fullName" = :fullName`, {fullName: user.fullName})
+      
+    
   }
 
   async findOneByEmail(email: string): Promise<User> {
